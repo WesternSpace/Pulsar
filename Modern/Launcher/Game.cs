@@ -68,9 +68,8 @@ internal static class Game
         AssemblyLoadContext.Default.LoadFromAssemblyPath("D:\\Games\\steamapps\\common\\SpaceEngineers2\\Game2\\SpaceEngineers2.dll").GetType("Keen.Game2.Program").GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [args]); 
     }
 
-    // TEMP SOLUTION!!
     public static void RunOnGameThread(Action action)
     {
-        action();
+        throw new NotImplementedException();
     }
 }
