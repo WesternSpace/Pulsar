@@ -13,9 +13,9 @@ public class Launcher(string sePath)
 
     public bool CanStart()
     {
-        if (IsSpaceEngineersRunning())
+        if (IsGameRunning())
         {
-            Tools.ShowMessageBox("Error: Space Engineers is already running!");
+            Tools.ShowMessageBox("Error: The game is already running!");
             return false;
         }
 
@@ -31,7 +31,7 @@ public class Launcher(string sePath)
         return true;
     }
 
-    private bool IsSpaceEngineersRunning()
+    private bool IsGameRunning()
     {
         string seName = Path.GetFileNameWithoutExtension(sePath);
         return Process
@@ -50,10 +50,11 @@ public class Launcher(string sePath)
     public bool VerifyConfig()
     {
         string seFolder = Path.GetDirectoryName(sePath);
-        bool hasConfig = Tools.GetFiles(seFolder, ["*.config"], []).Any();
+        bool hasConfig = Tools.GetFiles(seFolder, ["*.config", "*.runtimeconfig.json"], []).Any();
         string configPath = Assembly.GetEntryAssembly().Location + ".config";
+        string configPathModern = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) + ".runtimeconfig.json";
 
-        if (hasConfig && !File.Exists(configPath))
+        if ((hasConfig && !File.Exists(configPath)) && (hasConfig && !File.Exists(configPathModern)))
             return false;
 
         return true;

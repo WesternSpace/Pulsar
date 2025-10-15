@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Gameloop.Vdf;
+using Gameloop.Vdf.Linq;
+using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
+using Pulsar.Shared;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Gameloop.Vdf;
-using Gameloop.Vdf.Linq;
-using Microsoft.Win32;
-using Pulsar.Shared;
 
-namespace Pulsar.Legacy.Launcher;
+namespace Pulsar.Modern.Launcher;
 
 internal class Folder
 {
@@ -16,25 +17,25 @@ internal class Folder
         @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App {0}";
     private const string registryName = "InstallLocation";
 
-    private const string seLauncher = "SpaceEngineers.exe";
-    private static readonly HashSet<string> seFiles =
+    private const string se2Launcher = "SpaceEngineers2.exe";
+    private static readonly HashSet<string> se2Files =
     [
-        seLauncher,
-        "SpaceEngineers.Game.dll",
-        "VRage.dll",
-        "Sandbox.Game.dll",
-        "ProtoBuf.Net.dll",
+        se2Launcher,
+        "SpaceEngineers2.dll",
+        "VRage.Core.dll",
+        "Game2.Game.dll",
+        "Vortice.Direct3D12.dll"
     ];
 
-    public static string GetBin64() =>
+    public static string GetGame2() =>
         FromOverride() ?? FromSteamArgs() ?? FromSteamFiles() ?? FromRegistry();
 
-    private static bool IsBin64(string path)
+    private static bool IsGame2(string path)
     {
         if (!Directory.Exists(path))
             return false;
 
-        foreach (string file in seFiles)
+        foreach (string file in se2Files)
             if (!File.Exists(Path.Combine(path, file)))
                 return false;
 
@@ -60,7 +61,7 @@ internal class Folder
             RegistryView.Registry64
         );
 
-        using var key = baseKey.OpenSubKey(string.Format(registryKey, Steam.AppIdSe1));
+        using var key = baseKey.OpenSubKey(string.Format(registryKey, Steam.AppIdSe2));
         if (key is null)
             return null;
 
@@ -68,8 +69,8 @@ internal class Folder
         if (string.IsNullOrWhiteSpace(installLocation))
             return null;
 
-        string path = Path.Combine(installLocation, "Bin64");
-        if (!IsBin64(path))
+        string path = Path.Combine(installLocation, "Game2");
+        if (!IsGame2(path))
             return null;
 
         return path;
@@ -80,7 +81,7 @@ internal class Folder
         string[] args = Environment.GetCommandLineArgs();
         int index = Array.FindIndex(
             args,
-            arg => arg.Equals("-bin64", StringComparison.OrdinalIgnoreCase)
+            arg => arg.Equals("-game2", StringComparison.OrdinalIgnoreCase)
         );
 
         if (index < 0 || index >= args.Length - 1)
@@ -96,7 +97,7 @@ internal class Folder
         else
             path = TryConvertUnix(path);
 
-        if (!IsBin64(path))
+        if (!IsGame2(path))
             return null;
 
         return Path.GetFullPath(path);
@@ -109,12 +110,12 @@ internal class Folder
 
         IEnumerable<string> sePaths = Environment
             .GetCommandLineArgs()
-            .Where(arg => arg.Contains("Bin64") && arg.Contains(seLauncher))
+            .Where(arg => arg.Contains("Game2") && arg.Contains(se2Launcher))
             .Select(TryConvertUnix)
             .Select(Path.GetDirectoryName);
 
         foreach (string path in sePaths)
-            if (IsBin64(path))
+            if (IsGame2(path))
                 return path;
 
         return null;
@@ -139,20 +140,20 @@ internal class Folder
             var data = (VObject)library.Value;
             var apps = (VObject)data["apps"];
 
-            if (!apps.ContainsKey(Steam.AppIdSe1.ToString()))
+            if (!apps.ContainsKey(Steam.AppIdSe2.ToString()))
                 continue;
 
             string targetPath = data.Value<string>("path");
-            string bin64 = Path.Combine(
+            string game2 = Path.Combine(
                 targetPath,
                 "steamapps",
                 "common",
-                "SpaceEngineers",
-                "Bin64"
+                "SpaceEngineers2",
+                "Game2"
             );
 
-            if (IsBin64(bin64))
-                return bin64;
+            if (IsGame2(game2))
+                return game2;
         }
 
         return null;

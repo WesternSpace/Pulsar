@@ -112,7 +112,7 @@ static class Program
         string modDir = Path.Combine(
             bin64Dir,
             @"..\..\..\workshop\content",
-            Steam.AppId.ToString()
+            Steam.AppIdSe1.ToString()
         );
 
         Version seVersion = Game.GetGameVersion(bin64Dir);
@@ -150,7 +150,7 @@ static class Program
         SplashManager.Instance?.SetText("Starting Steam...");
         string bin64Dir = ConfigManager.Instance.GameDir;
         AppDomain.CurrentDomain.AssemblyResolve += Steam.SteamworksResolver(bin64Dir);
-        Steam.Init();
+        Steam.Init(Steam.AppIdSe1);
     }
 
     private static void SetupPlugins(string baseDir)

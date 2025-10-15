@@ -12,7 +12,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows7.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -45,6 +45,7 @@
     <StartAction>Program</StartAction>
     <StartWorkingDirectory>$(Pulsar)</StartWorkingDirectory>
     <StartProgram>$(Pulsar)\Modern.exe</StartProgram>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="call &quot;$(ProjectDir)deploy.bat&quot; &quot;$(TargetPath)&quot; &quot;$(Pulsar)&quot; &quot;$(SolutionDir)LICENSE&quot;" />
@@ -53,12 +54,61 @@
     <Exec Command="call &quot;$(SolutionDir)verify.bat&quot; &quot;$(Game2)&quot;" />
   </Target>
   <ItemGroup>
+    <AdditionalFiles Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="SpaceEngineers2" HintPath="$(Game2)\SpaceEngineers2.dll" Private="False" />
+	  <Reference Include="SpaceEngineers2" HintPath="$(Game2)\VRage.Library.dll" Private="False" />
+	  <Reference Include="VRage.UI">
+	    <HintPath>$(Game2)\VRage.UI.dll</HintPath>
+	  </Reference>
+	  <Reference Include="VRage.UI.Shared">
+	    <HintPath>$(Game2)\VRage.UI.Shared.dll</HintPath>
+	  </Reference>
+	  <Reference Include="VRage.Input">
+		  <HintPath>$(Game2)\VRage.Input.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Game2.Client">
+		  <HintPath>$(Game2)\Game2.Client.dll</HintPath>
+	  </Reference>
+	  <Reference Include="VRage.Core">
+		  <HintPath>$(Game2)\VRage.Core.dll</HintPath>
+	  </Reference>
+	  <Reference Include="VRage.DCS">
+		  <HintPath>$(Game2)\VRage.DCS.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Game2.Simulation">
+		  <HintPath>$(Game2)\Game2.Simulation.dll</HintPath>
+	  </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.3.6" />
+	  <PackageReference Include="Avalonia" Version="11.0.10" />
+	  <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
+	  <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+	  <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
+	  <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+	  <PackageReference Include="Avalonia.Diagnostics" Version="11.0.10">
+		  <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+		  <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+	  </PackageReference>
+	  <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.10" />
+    <PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
+    <PackageReference Include="Lib.Harmony" Version="2.4.1" />
+	  <PackageReference Include="Krafs.Publicizer" Version="2.3.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
   </ItemGroup>
+	<ItemGroup>
+		<Publicize Include="Game2.Client" />
+		<Publicize Include="VRage.UI" />
+		<Publicize Include="SpaceEngineers2" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Patch\" />
+	</ItemGroup>
 </Project>

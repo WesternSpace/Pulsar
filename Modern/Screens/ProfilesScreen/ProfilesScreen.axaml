@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:Class="Pulsar.Modern.Screens.ProfilesScreen.ProfilesScreen">
+    <Border Background="Transparent"
+			BorderBrush="rgba(66,77,99,96)"
+			BorderThickness="1.5" 
+			Width="1224" 
+			Height="561">
+        <StackPanel Background="rgba(37,47,53,96)">
+            <TextBlock HorizontalAlignment="Center"
+					   Margin="0,40,0,0"
+					   FontSize="25"
+					   FontWeight="Normal">Profiles</TextBlock>
+            <Separator Background="rgb(77,99,96)" Margin="100,16,100,16"/>
+            <ListBox HorizontalAlignment="Center" Width="1150" Height="345" >
+				<ListBox.Template>
+					<ControlTemplate>
+						<DockPanel LastChildFill="True" Background="rgba(41,54,62,96)">
+							<Grid DockPanel.Dock="Top" Height="30" Background="rgba(60,76,82,96)">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="400"/>
+									<ColumnDefinition Width="600"/>
+								</Grid.ColumnDefinitions>
+								<Label Grid.Column="0">Name</Label>
+								<Label Grid.Column="1">Enabled Count</Label>
+							</Grid>
+							<ItemsPresenter></ItemsPresenter>
+						</DockPanel>
+					</ControlTemplate>
+				</ListBox.Template>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Grid Margin="0,2">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="400"/>
+								<ColumnDefinition Width="600"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="{Binding Name}" Grid.Column="0"/>
+							<TextBlock Text="{Binding Count}" Grid.Column="1"/>
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+			<Separator Background="rgb(77,99,96)" Margin="100,16,100,0"/>
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+				<Button Name="NewButton" Width="264" Height="55">New</Button>
+				<Button Name="LoadButton" Width="264" Height="55" Margin="26,0,0,0">Load</Button>
+				<Button Name="RenameButton" Width="264" Height="55" Margin="26,0,0,0">Rename</Button>
+				<Button Name="CancelButton" Width="264" Height="55" Margin="26,0,0,0">Cancel</Button>
+			</StackPanel>
+		</StackPanel>
+    </Border>
+</UserControl>
