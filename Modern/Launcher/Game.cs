@@ -53,7 +53,7 @@ internal static class Game
     {
         // No native function in Space Engineers does this but we can estimate
         // FIXME: Does not work well with Preloaders or under Proton
-        float expectedGrowth = 1100f * 1024 * 1024;
+        const float expectedGrowth = 1600f * 1024 * 1024;
 
         Process process = Process.GetCurrentProcess();
         process.Refresh();
@@ -65,7 +65,7 @@ internal static class Game
 
     public static void StartSpaceEngineers2(string[] args) 
     {
-        AssemblyLoadContext.Default.LoadFromAssemblyPath("D:\\Games\\steamapps\\common\\SpaceEngineers2\\Game2\\SpaceEngineers2.dll").GetType("Keen.Game2.Program").GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, [args]); 
+        AccessTools.TypeByName("Keen.Game2.Program").Method("Main").Invoke(null, [args]); 
     }
 
     public static void RunOnGameThread(Action action)
