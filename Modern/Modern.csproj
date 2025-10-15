@@ -83,6 +83,9 @@
 	  <Reference Include="Game2.Simulation">
 		  <HintPath>$(Game2)\Game2.Simulation.dll</HintPath>
 	  </Reference>
+	  <Reference Include="VRage.Client">
+		  <HintPath>$(Game2)\VRage.Client.dll</HintPath>
+	  </Reference>
   </ItemGroup>
   <ItemGroup>
 	  <PackageReference Include="Avalonia" Version="11.0.10" />
@@ -106,9 +109,11 @@
 	<ItemGroup>
 		<Publicize Include="Game2.Client" />
 		<Publicize Include="VRage.UI" />
+		<Publicize Include="VRage.Client" />
 		<Publicize Include="SpaceEngineers2" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="Loader\" />
 	  <Folder Include="Patch\" />
 	</ItemGroup>
 </Project>

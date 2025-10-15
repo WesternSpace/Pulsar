@@ -1,17 +1,9 @@
 ﻿using HarmonyLib;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Keen.VRage.Library.Diagnostics;
+using Pulsar.Shared;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Loader;
-using System.Text;
-using System.Threading.Tasks;
-using Pulsar.Shared;
 
 namespace Pulsar.Modern.Launcher;
 

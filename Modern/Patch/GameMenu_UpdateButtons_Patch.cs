@@ -9,9 +9,11 @@ using Keen.Game2.Client.UI.Menu.MainMenu;
 using Keen.VRage.UI.AvaloniaInterface;
 using Keen.VRage.UI.Shared.Helpers;
 using Pulsar.Modern.Screens.PluginsScreen;
+using Pulsar.Shared;
 
 namespace Pulsar.Modern.Patch;
 
+[HarmonyPatchCategory("Late")]
 [HarmonyPatch(typeof(GameMenu), "UpdateButtons")]
 internal class GameMenu_UpdateButtons_Patch
 {
@@ -50,6 +52,8 @@ internal class GameMenu_UpdateButtons_Patch
         };
 
         __instance._buttonsPanel.Children.Insert(__instance._buttonsPanel.Children.Count - 2, pluginsButton);
+
+        (__instance._buttonsPanel.Children[__instance._buttonsPanel.Children.Count - 1] as Button).Content = $"Exit to {(Tools.IsNative() ? "Windows" : "Linux")}";
 
 #if DEBUG
         (AvaloniaApp.Instance.MainWindow as Window)?.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Shift));

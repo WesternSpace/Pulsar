@@ -227,9 +227,6 @@ static class Program
         string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
         new Harmony(assemblyName + ".Early").PatchCategory("Early");
 
-        //Game.SetupMyFakes();
-        //Game.CorrectExitText();
-        //Game.ShowIntroVideo(Flags.GameIntroVideo);
         //Game.RegisterPlugin(new PluginLoader());
 
         SplashManager.Instance?.SetText("Launching Space Engineers 2...");
