@@ -227,8 +227,6 @@ static class Program
         string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
         new Harmony(assemblyName + ".Early").PatchCategory("Early");
 
-        //Game.RegisterPlugin(new PluginLoader());
-
         SplashManager.Instance?.SetText("Launching Space Engineers 2...");
         if (Tools.IsNative())
             ProgressPollFactory().Start();
@@ -260,8 +258,14 @@ static class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    {
+        AssemblyLoadContext.Default.Resolving += ResolveFolder(Path.Combine(Environment.CurrentDirectory, "Libraries/Modern"));
+        AssemblyLoadContext.Default.Resolving += ResolveFolder(Path.Combine(Environment.CurrentDirectory, "Libraries/Modern/Compiler"));
+        AssemblyLoadContext.Default.Resolving += ResolveFolder(Folder.GetGame2());
+
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .UseReactiveUI();
+    }
 }

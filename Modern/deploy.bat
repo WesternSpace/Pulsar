@@ -29,17 +29,19 @@ if not exist "%PULSAR%" (
 )
 
 REM Copy launcher into Pulsar directory
-echo Copying "%LAUNCHER%"
+echo Copying "%LAUNCHER%.exe"
 
 for /l %%i in (1, 1, 10) do (
-    copy /y /b "%SOURCE%\%LAUNCHER%" "%PULSAR%\" >NUL 2>&1
+    copy /y /b "%SOURCE%\%LAUNCHER%.exe" "%PULSAR%\" >NUL 2>&1
 
     if !ERRORLEVEL! NEQ 0 (
         REM "timeout" requires input redirection which is not supported,
         REM so we use ping as a way to delay the script between retries.
         ping -n 2 127.0.0.1 >NUL 2>&1
     ) else (
-        copy /y /b "%SOURCE%\%LAUNCHER%.config" "%PULSAR%\" >NUL 2>&1
+        copy /y /b "%SOURCE%\%LAUNCHER%.dll" "%PULSAR%\" >NUL 2>&1
+        copy /y /b "%SOURCE%\%LAUNCHER%.runtimeconfig.json" "%PULSAR%\" >NUL 2>&1
+        copy /y /b "%SOURCE%\%LAUNCHER%.deps.json" "%PULSAR%\" >NUL 2>&1
         goto BREAK_LOOP
     )
 )

@@ -48,14 +48,11 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="call &quot;$(ProjectDir)deploy.bat&quot; &quot;$(TargetPath)&quot; &quot;$(Pulsar)&quot; &quot;$(SolutionDir)LICENSE&quot;" />
+    <Exec Command="call &quot;$(ProjectDir)deploy.bat&quot; &quot;$(OutDir)\$(TargetName)&quot; &quot;$(Pulsar)&quot; &quot;$(SolutionDir)LICENSE&quot;" />
   </Target>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="call &quot;$(SolutionDir)verify.bat&quot; &quot;$(Game2)&quot;" />
   </Target>
-  <ItemGroup>
-    <AdditionalFiles Include="app.manifest" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
@@ -86,6 +83,9 @@
 	  <Reference Include="VRage.Client">
 		  <HintPath>$(Game2)\VRage.Client.dll</HintPath>
 	  </Reference>
+	  <Reference Include="Game2.Game">
+		  <HintPath>$(Game2)\Game2.Game.dll</HintPath>
+	  </Reference>
   </ItemGroup>
   <ItemGroup>
 	  <PackageReference Include="Avalonia" Version="11.0.10" />
@@ -111,9 +111,5 @@
 		<Publicize Include="VRage.UI" />
 		<Publicize Include="VRage.Client" />
 		<Publicize Include="SpaceEngineers2" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Loader\" />
-	  <Folder Include="Patch\" />
 	</ItemGroup>
 </Project>
