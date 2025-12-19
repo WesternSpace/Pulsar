@@ -288,6 +288,7 @@ public class LocalFolderPlugin : PluginData
             Tooltip = null;
             Author = null;
             Description = null;
+            Runtimes = null;
             return;
         }
 
@@ -311,6 +312,7 @@ public class LocalFolderPlugin : PluginData
             Tooltip = github.Tooltip;
             Author = github.Author;
             Description = github.Description;
+            Runtimes = github.Runtimes;
             sourceDirectories = github
                 .SourceDirectories?.Select(x => Path.Combine(Folder, x).Replace('\\', '/'))
                 .ToArray();
