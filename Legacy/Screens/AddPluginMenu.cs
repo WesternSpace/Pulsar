@@ -187,13 +187,19 @@ public class AddPluginMenu : PluginScreen
         if (string.IsNullOrWhiteSpace(Filter))
             return;
 
-        var scoreCache = plugins.ToDictionary(p => p, p => p.FuzzyRank(Filter));
-        plugins.Sort((a, b) => scoreCache[b].CompareTo(scoreCache[a]));
+        var scoreCache = plugins.ToDictionary(p => p, p => p.Rank(Filter));
+        plugins.Sort(Comparator);
+
+        int Comparator(PluginData x, PluginData y)
+        {
+            int comp = scoreCache[y].CompareTo(scoreCache[x]);
+            return comp == 0 ? ComparePluginsByName(x, y) : comp;
+        }
     }
 
     private int ComparePluginsByName(PluginData x, PluginData y)
     {
-        return x.FriendlyName.CompareTo(y.FriendlyName);
+        return x.FriendlyName.CompareTo(y.FriendlyName, StringComparison.OrdinalIgnoreCase);
     }
 
     private int ComparePluginsByUsage(PluginData x, PluginData y)
