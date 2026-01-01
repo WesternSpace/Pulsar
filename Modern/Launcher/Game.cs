@@ -57,7 +57,7 @@ internal static class Game
 
     public static void StartSpaceEngineers2(string[] args) 
     {
-        AccessTools.TypeByName("Keen.Game2.Program").Method("Main").Invoke(null, [args]); 
+        Keen.Game2.Program.Main(args);
     }
 
     public static void RunOnGameThread(Action action)

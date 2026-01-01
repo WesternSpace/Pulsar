@@ -80,8 +80,8 @@ internal class PluginLoader : IPlugin, IDisposable
             LogFile.Open();
         }
 
-        SplashManager.Instance?.SetText($"Updating workshop items...");
-        ProfilesConfig profiles = ConfigManager.Instance.Profiles;
+        //SplashManager.Instance?.SetText($"Updating workshop items...");
+        //ProfilesConfig profiles = ConfigManager.Instance.Profiles;
         //SteamMods.Update(profiles.Current.Mods);
     }
 

@@ -32,8 +32,11 @@ static class Program
 
     static void Main(string[] args)
     {
-        AssemblyLoadContext.Default.Resolving += ResolveFolder(Path.Combine(Environment.CurrentDirectory, "Libraries/Modern"));
-        AssemblyLoadContext.Default.Resolving += ResolveFolder(Path.Combine(Environment.CurrentDirectory, "Libraries/Modern/Compiler"));
+        Assembly currentAssembly = Assembly.GetExecutingAssembly();
+        string baseDir = Path.GetDirectoryName(currentAssembly.Location);
+
+        AssemblyLoadContext.Default.Resolving += ResolveFolder(Path.Combine(baseDir, "Libraries/Modern"));
+        AssemblyLoadContext.Default.Resolving += ResolveFolder(Path.Combine(baseDir, "Libraries/Modern/Compiler"));
 
         Init(args);
     }
@@ -223,6 +226,7 @@ static class Program
         LogFile.GameLog = new GameLog();
 
         Assembly.SetEntryAssembly(AssemblyLoadContext.Default.LoadFromAssemblyPath(originalLoaderPath));
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", game2Dir);
 
         string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
         new Harmony(assemblyName + ".Early").PatchCategory("Early");

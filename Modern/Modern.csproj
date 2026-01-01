@@ -59,6 +59,9 @@
   <ItemGroup>
     <Reference Include="SpaceEngineers2" HintPath="$(Game2)\SpaceEngineers2.dll" Private="False" />
 	  <Reference Include="SpaceEngineers2" HintPath="$(Game2)\VRage.Library.dll" Private="False" />
+	  <Reference Include="VRage.Platform.Windows">
+	    <HintPath>$(Game2)\VRage.Platform.Windows.dll</HintPath>
+	  </Reference>
 	  <Reference Include="VRage.UI">
 	    <HintPath>$(Game2)\VRage.UI.dll</HintPath>
 	  </Reference>

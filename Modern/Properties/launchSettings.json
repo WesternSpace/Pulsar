@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Space Engineers 2": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Western\\AppData\\Roaming\\Pulsar\\Modern.exe",
+      "workingDirectory": "C:\\Users\\Western\\AppData\\Roaming\\Pulsar"
+    }
+  }
+}
