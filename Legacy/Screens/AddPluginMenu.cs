@@ -20,30 +20,35 @@ public class AddPluginMenu : PluginScreen
     const float PercentSearchBox = 0.8f;
 
     private readonly List<PluginData> plugins;
-    private readonly HashSet<string> enabledPlugins;
+    private readonly Profile draft;
     private PluginStats stats;
     private readonly bool mods;
     private MyGuiControlCombobox sortDropdown;
+    private MyGuiControlSearchBox searchBox;
+    private MyGuiControlScrollablePanel scrollPanel;
     private Vector2 pluginListSize;
     private MyGuiControlParent pluginListGrid;
-    private string filter;
-
-    public event Action OnRestartRequired;
+    private string Filter
+    {
+        get => searchBox.TextBox.Text;
+        set => searchBox.TextBox.Text = value;
+    }
 
     enum SortingMethod
     {
         Name,
+        Search,
         Usage,
         Rating,
     }
 
-    public AddPluginMenu(IEnumerable<PluginData> plugins, bool mods, HashSet<string> enabledPlugins)
+    public AddPluginMenu(IEnumerable<PluginData> plugins, bool mods, Profile draft)
         : base(size: new Vector2(0.8f, 0.9f))
     {
         this.plugins = [.. plugins.Where(x => (x is ModPlugin) == mods)];
         stats = ConfigManager.Instance.Stats ?? new PluginStats();
         this.mods = mods;
-        this.enabledPlugins = enabledPlugins;
+        this.draft = draft;
         SortPlugins(SortingMethod.Name);
     }
 
@@ -74,6 +79,7 @@ public class AddPluginMenu : PluginScreen
         searchBox.Size = new Vector2(width * PercentSearchBox, searchBox.Size.Y);
         searchBox.OnTextChanged += SearchBox_OnTextChanged;
         Controls.Add(searchBox);
+        this.searchBox = searchBox;
 
         Vector2 sortPos = new(searchPos.X + searchBox.Size.X + GuiSpacing, searchPos.Y);
         Vector2 sortSize = new((width * (1 - PercentSearchBox)) - GuiSpacing, searchBox.Size.Y);
@@ -119,6 +125,7 @@ public class AddPluginMenu : PluginScreen
             );
         CreatePluginList(gridArea);
         Controls.Add(scrollPanel);
+        this.scrollPanel = scrollPanel;
         pluginListGrid = gridArea;
 
         FocusedControl = searchBox.TextBox;
@@ -126,7 +133,11 @@ public class AddPluginMenu : PluginScreen
 
     private void SearchBox_OnTextChanged(string newText)
     {
-        filter = newText;
+        if (scrollPanel.ScrollbarVPosition != 0 && !string.IsNullOrEmpty(newText))
+            scrollPanel.SetVerticalScrollbarValue(0);
+
+        sortDropdown.SelectItemByKey((int)SortingMethod.Search);
+        SortPluginsBySearch();
         RefreshPluginList();
     }
 
@@ -162,10 +173,22 @@ public class AddPluginMenu : PluginScreen
             case SortingMethod.Rating:
                 plugins.Sort(ComparePluginsByRating);
                 break;
+            case SortingMethod.Search:
+                SortPluginsBySearch();
+                break;
             default:
                 plugins.Sort(ComparePluginsByName);
                 break;
         }
+    }
+
+    private void SortPluginsBySearch()
+    {
+        if (string.IsNullOrWhiteSpace(Filter))
+            return;
+
+        var scoreCache = plugins.ToDictionary(p => p, p => p.FuzzyRank(Filter));
+        plugins.Sort((a, b) => scoreCache[b].CompareTo(scoreCache[a]));
     }
 
     private int ComparePluginsByName(PluginData x, PluginData y)
@@ -201,26 +224,17 @@ public class AddPluginMenu : PluginScreen
         CreatePluginList(pluginListGrid);
     }
 
-    private IEnumerable<PluginData> GetFilteredPlugins()
-    {
-        if (string.IsNullOrWhiteSpace(filter))
-            return plugins.Where(x => !x.Hidden);
-        string[] splitFilter = filter.Split([' '], StringSplitOptions.RemoveEmptyEntries);
-        // Plugin name must contain every item from the filter
-        return plugins.Where(plugin =>
-            splitFilter.All(arg =>
-                plugin.FriendlyName.Contains(arg, StringComparison.OrdinalIgnoreCase)
-            )
-        );
-    }
-
     private void CreatePluginList(MyGuiControlParent panel)
     {
-        PluginData[] plugins = [.. GetFilteredPlugins()];
+        PluginData[] shownPlugins;
+        if ((int)sortDropdown.GetSelectedKey() == (int)SortingMethod.Search)
+            shownPlugins = [.. plugins];
+        else
+            shownPlugins = [.. plugins.Where(x => !x.Hidden)];
 
         Vector2 itemSize = pluginListSize / new Vector2(ListItemsHorizontal, ListItemsVertical);
-        int numPlugins = plugins.Length;
-        if (!mods && string.IsNullOrWhiteSpace(filter))
+        int numPlugins = shownPlugins.Length;
+        if (!mods && string.IsNullOrWhiteSpace(Filter))
             numPlugins += 2;
         int totalRows = (int)Math.Ceiling(numPlugins / (float)ListItemsHorizontal);
         panel.Size = new Vector2(pluginListSize.X, itemSize.Y * totalRows);
@@ -234,8 +248,8 @@ public class AddPluginMenu : PluginScreen
             Vector2 itemPosition = (itemSize * new Vector2(col, row)) + itemPositionOffset;
             MyGuiControlParent itemPanel = new(position: itemPosition, size: itemSize);
 
-            if (i < plugins.Length)
-                CreatePluginListItem(plugins[i], itemPanel);
+            if (i < shownPlugins.Length)
+                CreatePluginListItem(shownPlugins[i], itemPanel);
 
             panel.Controls.Add(itemPanel);
         }
@@ -317,7 +331,7 @@ public class AddPluginMenu : PluginScreen
         MyGuiControlCheckbox enabledCheckbox = new(
             position: contentTopLeft + new Vector2(contentSize.X, 0),
             originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP,
-            isChecked: enabledPlugins.Contains(plugin.Id)
+            isChecked: draft.Contains(plugin.Id)
         )
         {
             Name = "PluginEnabled",
@@ -340,16 +354,15 @@ public class AddPluginMenu : PluginScreen
 
     private void OnEnabledChanged(MyGuiControlCheckbox checkbox)
     {
-        if (checkbox.UserData is PluginData plugin)
-        {
-            if (checkbox.IsChecked)
-                enabledPlugins.Add(plugin.Id);
-            else
-                enabledPlugins.Remove(plugin.Id);
+        if (checkbox.UserData is not PluginData plugin)
+            return;
 
-            if (plugin.UpdateEnabledPlugins(enabledPlugins, checkbox.IsChecked))
-                RefreshPluginList();
-        }
+        plugin.UpdateProfile(draft, checkbox.IsChecked);
+
+        if (!checkbox.IsChecked && plugin is LocalFolderPlugin devFolder)
+            devFolder.DeserializeFile(null);
+
+        RefreshPluginList();
     }
 
     private void OnPluginItemClicked(ParentButton btn)
@@ -357,27 +370,14 @@ public class AddPluginMenu : PluginScreen
         MyGuiControlBase checkbox = btn.Controls.GetControlByName("PluginEnabled");
         if (checkbox is not null && checkbox.CheckMouseOver(false))
             return;
-        if (btn.UserData is PluginData plugin)
-        {
-            btn.PlayClickSound();
-            PluginDetailMenu screen = new(plugin, enabledPlugins);
-            screen.OnRestartRequired += DetailMenu_OnRestartRequired;
-            screen.OnPluginRemoved += DetailMenu_OnPluginRemoved;
-            screen.Closed += DetailMenu_Closed;
-            MyScreenManager.AddScreen(screen);
-        }
-    }
 
-    private void DetailMenu_OnRestartRequired()
-    {
-        OnRestartRequired?.Invoke();
-    }
+        if (btn.UserData is not PluginData plugin)
+            return;
 
-    private void DetailMenu_OnPluginRemoved(PluginData plugin)
-    {
-        int index = plugins.FindIndex(x => x.Id == plugin.Id);
-        if (index >= 0)
-            plugins.RemoveAt(index);
+        btn.PlayClickSound();
+        PluginDetailMenu screen = new(plugin, draft);
+        screen.Closed += DetailMenu_Closed;
+        MyScreenManager.AddScreen(screen);
     }
 
     private void DetailMenu_Closed(MyGuiScreenBase source, bool isUnloading)

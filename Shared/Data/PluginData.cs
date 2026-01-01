@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Xml.Serialization;
+using FuzzySharp;
 using ProtoBuf;
 using Pulsar.Shared.Config;
 
@@ -203,29 +204,35 @@ public abstract class PluginData : IEquatable<PluginData>
         LogFile.Open();
     }
 
-    public virtual bool UpdateEnabledPlugins(HashSet<string> enabledPlugins, bool enable)
+    public int FuzzyRank(string query)
     {
-        bool changed;
+        string[] terms = query.Split([';'], StringSplitOptions.RemoveEmptyEntries);
 
-        if (enable)
-        {
-            changed = enabledPlugins.Add(Id);
+        int nameScore = 0;
+        if (FriendlyName is not null)
+            foreach (string term in terms)
+                nameScore += Fuzz.PartialRatio(term, FriendlyName);
 
+        int authorScore = 0;
+        if (Author is not null)
+            foreach (string term in terms)
+                authorScore += Fuzz.Ratio(term, Author);
+
+        int tooltipScore = 0;
+        if (Tooltip is not null)
+            foreach (string term in terms)
+                tooltipScore += Fuzz.TokenSetRatio(term, Tooltip);
+
+        return nameScore + authorScore + tooltipScore;
+    }
+
+    public virtual void UpdateProfile(Profile profile, bool enabled)
+    {
+        if (enabled)
             foreach (PluginData other in Group)
-            {
-                if (
-                    !ReferenceEquals(other, this)
-                    && other.UpdateEnabledPlugins(enabledPlugins, false)
-                )
-                    changed = true;
-            }
-        }
+                other.UpdateProfile(profile, false);
         else
-        {
-            changed = enabledPlugins.Remove(Id);
-        }
-
-        return changed;
+            profile.Remove(Id);
     }
 
     /// <summary>
