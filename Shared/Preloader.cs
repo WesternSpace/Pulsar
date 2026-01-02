@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using HarmonyLib;
 using Mono.Cecil;
 
 namespace Pulsar.Shared;
@@ -13,19 +14,30 @@ public class Preloader
     private const string ClassName = "Preloader";
     private const string TargetName = "TargetDLLs";
     private const string PatchName = "Patch";
+    private const string PreHookName = "Initialize";
+    private const string PostHookName = "Finish";
 
-    public bool HasPatches => patches.Keys.Count > 0;
+    public bool HasPatches => patches.Keys.Count + preHooks.Count + postHooks.Count > 0;
 
-    private readonly Dictionary<string, HashSet<Type>> patches = [];
+    private readonly HashSet<MethodInfo> preHooks = [];
+    private readonly HashSet<MethodInfo> postHooks = [];
+    private readonly Dictionary<string, HashSet<MethodInfo>> patches = [];
 
     public Preloader(IEnumerable<Assembly> assemblies)
     {
         foreach (Assembly assembly in assemblies)
-            AddPatch(assembly);
+        {
+            Type preloader = assembly.GetType(ClassName);
+            if (preloader is not null)
+                AddPreloader(preloader);
+        }
     }
 
     public void Preload(string gameDir, string preloadDir)
     {
+        foreach (MethodInfo hook in preHooks)
+            SafeInvoke(hook);
+
         var resolver = new DefaultAssemblyResolver();
         resolver.AddSearchDirectory(gameDir);
 
@@ -38,41 +50,18 @@ public class Preloader
         {
             string dll = kvp.Key;
             string seDll = Path.Combine(gameDir, dll);
-            HashSet<Type> patchClasses = kvp.Value;
+            HashSet<MethodInfo> patchMethods = kvp.Value;
 
-            if (IsAssemblyLoaded(dll))
-            {
-                string message = $"Cannot preloader patch loaded '{dll}'";
-                LogFile.Error(message);
-                Tools.ShowMessageBox(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (EnsureNotLoaded(dll))
                 continue;
-            }
 
-            AssemblyDefinition asmDef;
-
-            try
-            {
-                asmDef = AssemblyDefinition.ReadAssembly(seDll, readerParams);
-            }
-            catch (FileNotFoundException)
-            {
-                string message =
-                    $"Target '{dll}' for preloader plugin(s) "
-                    + string.Join(
-                        ", ",
-                        patchClasses.Select(x => "'" + x.Assembly.GetName().Name + "'")
-                    )
-                    + " could not be found";
-
-                LogFile.Error(message);
-                Tools.ShowMessageBox(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (TryReadAssembly(seDll, readerParams, patchMethods, out var asmDef))
                 continue;
-            }
 
-            foreach (Type patchClass in patchClasses)
-                Patch(patchClass, ref asmDef);
+            foreach (MethodInfo patchMethod in patchMethods)
+                ApplyPatch(patchMethod, ref asmDef);
 
-            // CLR does not respect pure in-memory refrences when resolving
+            // CLR does not respect pure in-memory references when resolving
             string newDll = Path.Combine(preloadDir, dll);
             asmDef.Write(newDll);
             Assembly.LoadFrom(newDll);
@@ -81,16 +70,80 @@ public class Preloader
         foreach (string file in Directory.GetFiles(preloadDir))
             if (!patches.ContainsKey(Path.GetFileName(file)))
                 File.Delete(file);
+
+        foreach (MethodInfo hook in postHooks)
+            SafeInvoke(hook);
     }
 
-    public void AddPatch(Type patch)
+    private static bool EnsureNotLoaded(string simpleName)
     {
-        IEnumerable<string> targets = GetTargets(patch);
-
-        if (targets is null)
+        bool IsEqual(Assembly asm)
         {
-            string name = patch.Assembly.GetName().Name;
-            string message = $"Preloader plugin '{name}' does not define targets";
+            string name = asm.GetName().Name;
+            return string.Equals(name, simpleName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (!AppDomain.CurrentDomain.GetAssemblies().Any(IsEqual))
+            return false;
+
+        string message = $"Failed to patch '{simpleName}' as it is loaded into memory!";
+        LogFile.Error(message);
+        Tools.ShowMessageBox(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+        return true;
+    }
+
+    private static bool TryReadAssembly(
+        string path,
+        ReaderParameters reader,
+        IEnumerable<MethodInfo> users,
+        out AssemblyDefinition assemblyDefinition
+    )
+    {
+        try
+        {
+            assemblyDefinition = AssemblyDefinition.ReadAssembly(path, reader);
+        }
+        catch (FileNotFoundException)
+        {
+            string dll = Path.GetFileName(path);
+            string message =
+                $"Target '{dll}' for preloader plugin(s) "
+                + string.Join(", ", users.Select(GetAssemblyName))
+                + " could not be found";
+
+            LogFile.Error(message);
+            Tools.ShowMessageBox(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            assemblyDefinition = null;
+            return true;
+        }
+
+        return false;
+    }
+
+    public void AddPreloader(Type type)
+    {
+        MethodInfo preHookMethod = GetMethod(type, PreHookName, []);
+        if (preHookMethod is not null)
+            preHooks.Add(preHookMethod);
+
+        MethodInfo postHookMethod = GetMethod(type, PostHookName, []);
+        if (postHookMethod is not null)
+            postHooks.Add(postHookMethod);
+
+        IEnumerable<string> targets = GetSequence<string>(type, TargetName);
+        if (targets is null)
+            return;
+
+        MethodInfo patchMethod =
+            GetMethod(type, PatchName, [typeof(AssemblyDefinition)])
+            ?? GetMethod(type, PatchName, [typeof(AssemblyDefinition).MakeByRefType()]);
+
+        if (patchMethod is null)
+        {
+            string name = type.Assembly.GetName().Name;
+            string message = $"Preloader plugin '{name}' does not define a Patch method";
             LogFile.Error(message);
             Tools.ShowMessageBox(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
@@ -98,77 +151,59 @@ public class Preloader
 
         foreach (string dll in targets)
         {
-            if (patches.ContainsKey(dll))
-                patches[dll].Add(patch);
+            if (patches.TryGetValue(dll, out HashSet<MethodInfo> methods))
+                methods.Add(patchMethod);
             else
-                patches[dll] = [patch];
+                patches.Add(dll, [patchMethod]);
         }
     }
 
-    private void AddPatch(Assembly assembly)
+    private static MethodInfo GetMethod(Type type, string name, Type[] signature)
     {
-        Type patch = assembly.GetType(ClassName);
-
-        if (patch is not null)
-            AddPatch(patch);
+        MethodInfo mi = AccessTools.Method(type, name, signature);
+        bool valid = mi is not null && mi.IsStatic && mi.IsPublic && mi.ReturnType == typeof(void);
+        return valid ? mi : null;
     }
 
-    private static bool IsAssemblyLoaded(string simpleName)
+    private static IEnumerable<T> GetSequence<T>(Type type, string name)
     {
-        return AppDomain
-            .CurrentDomain.GetAssemblies()
-            .Any(a =>
-                string.Equals(a.GetName().Name, simpleName, StringComparison.OrdinalIgnoreCase)
-            );
+        var targetsProp = type.GetProperty(name, BindingFlags.Public | BindingFlags.Static);
+        if (targetsProp?.GetValue(null) is IEnumerable<T> targets)
+            return targets;
+        return null;
     }
 
-    private static IEnumerable<string> GetTargets(Type patch)
+    private static string GetAssemblyName(MethodInfo method) =>
+        $"'{method.DeclaringType.Assembly.GetName().Name}'";
+
+    private static bool ApplyPatch(MethodInfo patchMethod, ref AssemblyDefinition definition)
     {
-        PropertyInfo prop = patch.GetProperty(
-            TargetName,
-            BindingFlags.Public | BindingFlags.Static
-        );
-
-        if (prop is null || prop.GetValue(null) is not IEnumerable<string> targets)
-            return null;
-
-        return targets;
-    }
-
-    private static bool Patch(Type patch, ref AssemblyDefinition definition)
-    {
-        MethodInfo patchMethod = patch.GetMethod(
-            PatchName,
-            BindingFlags.Public | BindingFlags.Static
-        );
-
-        if (patchMethod is null)
-        {
-            string name = patch.Assembly.GetName().Name;
-            string message = $"Preloader plugin '{name}' does not define a patch method";
-            LogFile.Error(message);
-            Tools.ShowMessageBox(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return false;
-        }
-
         bool reference = patchMethod.GetParameters()[0].ParameterType.IsByRef;
         object[] args = [definition];
 
+        if (!SafeInvoke(patchMethod, args))
+            return false;
+
+        if (reference)
+            definition = (AssemblyDefinition)args[0];
+
+        return true;
+    }
+
+    private static bool SafeInvoke(MethodInfo method, object[] args = null)
+    {
         try
         {
-            patchMethod.Invoke(null, args);
+            method.Invoke(null, args ?? []);
         }
         catch (TargetInvocationException tie) when (tie.InnerException is not null)
         {
-            string name = patch.Assembly.GetName().Name;
-            var message = $"Preloader plugin '{name}' had an exception:\n" + tie.InnerException;
+            string name = GetAssemblyName(method);
+            var message = $"Preloader plugin {name} had an exception:\n" + tie.InnerException;
             LogFile.Error(message);
             Tools.ShowMessageBox(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
-
-        if (reference)
-            definition = (AssemblyDefinition)args[0];
 
         return true;
     }

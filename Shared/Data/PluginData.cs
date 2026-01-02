@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Windows.Forms;
@@ -204,26 +205,67 @@ public abstract class PluginData : IEquatable<PluginData>
         LogFile.Open();
     }
 
-    public int FuzzyRank(string query)
+    public long Rank(string query)
     {
-        string[] terms = query.Split([';'], StringSplitOptions.RemoveEmptyEntries);
+        string[] terms = query
+            .Trim()
+            .ToUpperInvariant()
+            .Split([';'], StringSplitOptions.RemoveEmptyEntries);
 
-        int nameScore = 0;
-        if (FriendlyName is not null)
+        return StrictRank(terms) * (long)int.MaxValue + FuzzyRank(terms);
+    }
+
+    private int StrictRank(string[] terms)
+    {
+        int? Score(string value)
+        {
+            if (value is null)
+                return null;
+
+            int score = 0;
             foreach (string term in terms)
-                nameScore += Fuzz.PartialRatio(term, FriendlyName);
+                if (value.Contains(term, StringComparison.OrdinalIgnoreCase))
+                    score += 1;
 
-        int authorScore = 0;
-        if (Author is not null)
+            return score;
+        }
+
+        int nameScore = (int)Score(FriendlyName);
+        int? authorScore = Score(Author);
+
+        return GetFinalScore([nameScore, authorScore]);
+    }
+
+    private int FuzzyRank(string[] terms)
+    {
+        const double penalty = 0.25;
+
+        int? Score(string value, Func<string, string, int> func)
+        {
+            if (value is null)
+                return null;
+
+            int score = 0;
             foreach (string term in terms)
-                authorScore += Fuzz.Ratio(term, Author);
+                score += func(term.ToUpperInvariant(), value.ToUpperInvariant());
 
-        int tooltipScore = 0;
-        if (Tooltip is not null)
-            foreach (string term in terms)
-                tooltipScore += Fuzz.TokenSetRatio(term, Tooltip);
+            return score;
+        }
 
-        return nameScore + authorScore + tooltipScore;
+        int nameScore = (int)Score(FriendlyName, Fuzz.PartialRatio);
+        int? authorScore = Score(Author, Fuzz.Ratio);
+        int? tooltipScore = Score(Tooltip, Fuzz.TokenSetRatio);
+
+        return GetFinalScore([nameScore, authorScore, tooltipScore], penalty);
+    }
+
+    private static int GetFinalScore(int?[] scores, double? penalty = null)
+    {
+        int placeholder = 0;
+        if (penalty.HasValue)
+            placeholder = (int)(scores.Where(x => x.HasValue).Average(x => x.Value) * penalty);
+        int rank = scores.Select(x => x ?? placeholder).Sum();
+        return rank;
     }
 
     public virtual void UpdateProfile(Profile profile, bool enabled)

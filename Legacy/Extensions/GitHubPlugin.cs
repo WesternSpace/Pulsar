@@ -53,7 +53,7 @@ internal static class GitHubPluginExtensions
     public static void Show(this GitHubPlugin gitHubPlugin)
     {
         MyGuiSandbox.OpenUrl(
-            "https://github.com/" + gitHubPlugin.Id,
+            $"https://github.com/{gitHubPlugin.RepoId}",
             UrlOpenMode.SteamOrExternalWithConfirm
         );
     }
