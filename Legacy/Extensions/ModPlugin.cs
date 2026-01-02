@@ -10,7 +10,7 @@ internal static class ModPluginExtensions
     public static void Show(this ModPlugin modPlugin)
     {
         MyGuiSandbox.OpenUrl(
-            "https://steamcommunity.com/workshop/filedetails/?id=" + modPlugin.Id,
+            $"https://steamcommunity.com/workshop/filedetails/?id={modPlugin.WorkshopId}",
             UrlOpenMode.SteamOrExternalWithConfirm
         );
     }

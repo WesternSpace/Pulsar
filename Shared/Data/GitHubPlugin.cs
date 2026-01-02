@@ -39,6 +39,15 @@ public partial class GitHubPlugin : PluginData
     [ProtoMember(5)]
     public NuGetPackageList NuGetReferences { get; set; }
 
+    private string _repoId;
+
+    [ProtoMember(6)]
+    public string RepoId
+    {
+        get => _repoId ?? Id;
+        set => _repoId = value;
+    }
+
     private GitHubPluginConfig settings;
     private string assemblyName;
     private CacheManifest manifest;
@@ -86,9 +95,9 @@ public partial class GitHubPlugin : PluginData
 
     public void InitPaths()
     {
-        string[] nameArgs = Id.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
+        string[] nameArgs = RepoId.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
         if (nameArgs.Length < 2)
-            throw new Exception("Invalid GitHub name: " + Id);
+            throw new Exception("Invalid GitHub name: " + RepoId);
 
         CleanPaths(SourceDirectories);
 
@@ -202,7 +211,7 @@ public partial class GitHubPlugin : PluginData
     )
     {
         ICompiler compiler = Tools.Compiler.Create();
-        using (Stream s = GitHub.GetRepoArchive(Id, commit))
+        using (Stream s = GitHub.GetRepoArchive(RepoId, commit))
         using (ZipArchive zip = new(s))
         {
             callback?.Invoke(0);
@@ -342,7 +351,7 @@ public partial class GitHubPlugin : PluginData
         {
             manifest.Invalidate();
             LogFile.WriteLine(
-                $"Cache for GitHub plugin {Id} was invalidated, it will need to be compiled again at next game start"
+                $"Cache for GitHub plugin {RepoId} was invalidated, it will need to be compiled again at next game start"
             );
         }
         catch (Exception e)
