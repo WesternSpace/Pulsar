@@ -1,20 +1,58 @@
+using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Keen.Game2;
 using Keen.Game2.Client.UI.Library.Dialogs.ThreeOptionsDialog;
-using Keen.VRage.Core;
-using Keen.VRage.Library.Utils;
 using Keen.VRage.UI.AvaloniaInterface.Services;
-using Keen.VRage.UI.Screens;
 using Pulsar.Modern.Screens.ProfilesScreen;
+using Pulsar.Shared;
+using Pulsar.Shared.Data;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Pulsar.Modern.Screens.PluginsScreen;
 
 [NeedsWindowStyles]
-public partial class PluginsScreen : ScreenView
+public partial class PluginsScreen : PluginScreenBase
 {
     public PluginsScreen()
     {
         InitializeComponent();
+
+        if (!Design.IsDesignMode)
+        {
+            PluginsList.DataContext = (DataContext as PluginsScreenViewModel).PluginList.OrderBy(x => x.FriendlyName).Where(x => x.GetType() != typeof(ModPlugin)).ToList();
+        }
+        else
+        {
+            PluginData dummyPlugin = new GitHubPlugin()
+            {
+                FriendlyName = "TEST PLUGIN",
+                Status = PluginStatus.Updated
+            };
+
+            List<PluginData> dummyPlugins = new List<PluginData>();
+
+            for (int i = 0; i < 25; i++)
+            {
+                dummyPlugins.Add(dummyPlugin);
+            }
+
+            PluginsList.DataContext = dummyPlugins;
+        }
+
+        ConsentBox.IsChecked = (DataContext as PluginsScreenViewModel).ConsentGiven;
+        ConsentBox.IsCheckedChanged += (DataContext as PluginsScreenViewModel).OnConsentBoxChanged;
+        PlayerConsent.OnConsentChanged += OnConsentChanged;
+    }
+
+    public override void OnDispose()
+    {
+        base.OnDispose();
+        PlayerConsent.OnConsentChanged -= OnConsentChanged;
+    }
+
+    private void OnConsentChanged()
+    {
+        (DataContext as PluginsScreenViewModel).UpdateConsentBox(ConsentBox);
     }
 
     private void CancelButton_OnClick(object? sender, RoutedEventArgs e)
@@ -30,14 +68,14 @@ public partial class PluginsScreen : ScreenView
             definition.Title = ScreenTools.GetKeyFromString("Apply Changes?");
             definition.Content = ScreenTools.GetKeyFromString("A restart is required to apply changes. Would you like to restart the game now?");
 
-            Singleton<VRageCore>.Instance.Engine.Get<GameAppComponent>().MainMenu._sharedUI.ShowDialog(new ThreeOptionsDialogViewModel(definition)
+            ScreenTools.GetSharedUIComponent().ShowDialog(new ThreeOptionsDialogViewModel(definition)
             {
                 ConfirmAction = () =>
                 {
                     (DataContext as PluginsScreenViewModel).Save();
                     //LoaderTools.AskToRestart();
                 },
-                DefaultAction = () => 
+                DefaultAction = () =>
                 {
                     (DataContext as PluginsScreenViewModel).Save();
                     Dispose();
@@ -52,6 +90,6 @@ public partial class PluginsScreen : ScreenView
 
     private void ProfilesButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        Singleton<VRageCore>.Instance.Engine.Get<GameAppComponent>().MainMenu._sharedUI.CreateScreen<ProfilesScreen.ProfilesScreen>(new ProfilesScreenViewModel((DataContext as PluginsScreenViewModel).EnabledPlugins));
+        ScreenTools.GetSharedUIComponent().CreateScreen<ProfilesScreen.ProfilesScreen>(new ProfilesScreenViewModel((DataContext as PluginsScreenViewModel).Draft));
     }
 }

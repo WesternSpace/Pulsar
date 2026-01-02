@@ -114,5 +114,6 @@
 		<Publicize Include="VRage.UI" />
 		<Publicize Include="VRage.Client" />
 		<Publicize Include="SpaceEngineers2" />
+		<Publicize Include="0Harmony" />
 	</ItemGroup>
 </Project>

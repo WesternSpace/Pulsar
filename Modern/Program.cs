@@ -13,10 +13,10 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
 using SharedLauncher = Pulsar.Shared.Launcher;
 using SharedLoader = Pulsar.Shared.Loader;
+using Tools = Pulsar.Shared.Tools;
 
 namespace Pulsar.Modern;
 

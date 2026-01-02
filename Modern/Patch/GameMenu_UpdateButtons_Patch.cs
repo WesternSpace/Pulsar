@@ -10,6 +10,7 @@ using Keen.VRage.UI.AvaloniaInterface;
 using Keen.VRage.UI.Shared.Helpers;
 using Pulsar.Modern.Screens.PluginsScreen;
 using Pulsar.Shared;
+using Tools = Pulsar.Shared.Tools;
 
 namespace Pulsar.Modern.Patch;
 
@@ -24,30 +25,13 @@ internal class GameMenu_UpdateButtons_Patch
             return;
         }
 
-        object dataContext = __instance.GetValue(GameMenu.DataContextProperty);
-
-        SharedUIComponent? component = null;
-
-        if (dataContext is MainMenuScreenViewModel mainMenuViewModel)
-        {
-            component = mainMenuViewModel._sharedUI;
-        }
-        else if (dataContext is InGameMenuScreenViewModel inGameMenuViewModel)
-        {
-            component = inGameMenuViewModel._sharedUI;
-        }
-        else
-        {
-            return;
-        }
-
         Button pluginsButton = new()
         {
             Classes = { "Menu" },
             Content = "Plugins",
             Command = SimpleCommand.Create(delegate
             {
-                component.CreateScreen<PluginsScreen>(new PluginsScreenViewModel(), true);
+                PluginsScreenViewModel.Open();
             })
         };
 

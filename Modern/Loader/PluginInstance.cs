@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Tools = Pulsar.Shared.Tools;
 
 namespace Pulsar.Modern.Loader;
 

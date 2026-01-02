@@ -1,15 +1,11 @@
 ﻿using Keen.VRage.UI.Screens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Pulsar.Shared.Data;
 
 namespace Pulsar.Modern.Screens.ProfilesScreen;
 
 internal class ProfilesScreenViewModel : ScreenViewModel
 {
-    public ProfilesScreenViewModel(HashSet<string> enabledPlugins)
+    public ProfilesScreenViewModel(Profile draft)
     {
         KeepsOtherScreensVisible = false;
         AllowsInputBelowUI = false;
