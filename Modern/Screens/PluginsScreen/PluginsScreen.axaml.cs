@@ -19,17 +19,24 @@ public partial class PluginsScreen : PluginScreenBase
 
         if (!Design.IsDesignMode)
         {
-            PluginsList.DataContext = (DataContext as PluginsScreenViewModel).PluginList.OrderBy(x => x.FriendlyName).Where(x => x.GetType() != typeof(ModPlugin)).ToList();
+            PluginsList.DataContext = (DataContext as PluginsScreenViewModel).PluginList
+                .OrderBy(x => x.FriendlyName)
+                .Where(x => x.GetType() != typeof(ModPlugin))
+                .ToList();
+            ConsentBox.IsChecked = (DataContext as PluginsScreenViewModel).ConsentGiven;
+            ConsentBox.IsCheckedChanged += (DataContext as PluginsScreenViewModel).OnConsentBoxChanged;
+            PlayerConsent.OnConsentChanged += OnConsentChanged;
         }
         else
         {
             PluginData dummyPlugin = new GitHubPlugin()
             {
                 FriendlyName = "TEST PLUGIN",
+                Author = "A user",
                 Status = PluginStatus.Updated
             };
 
-            List<PluginData> dummyPlugins = new List<PluginData>();
+            List<PluginData> dummyPlugins = [];
 
             for (int i = 0; i < 25; i++)
             {
@@ -38,10 +45,6 @@ public partial class PluginsScreen : PluginScreenBase
 
             PluginsList.DataContext = dummyPlugins;
         }
-
-        ConsentBox.IsChecked = (DataContext as PluginsScreenViewModel).ConsentGiven;
-        ConsentBox.IsCheckedChanged += (DataContext as PluginsScreenViewModel).OnConsentBoxChanged;
-        PlayerConsent.OnConsentChanged += OnConsentChanged;
     }
 
     public override void OnDispose()

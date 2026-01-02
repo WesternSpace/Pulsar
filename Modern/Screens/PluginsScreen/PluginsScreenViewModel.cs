@@ -24,7 +24,7 @@ internal class PluginsScreenViewModel : ScreenViewModel
         KeepsOtherScreensVisible = false;
         AllowsInputBelowUI = false;
         AllowsInputFromLowerScreens = false;
-
+       
         Draft = Tools.DeepCopy(configManager.Profiles.Current);
         PluginList = configManager.List;
         profiles = configManager.Profiles;
@@ -39,7 +39,7 @@ internal class PluginsScreenViewModel : ScreenViewModel
         PluginsScreenViewModel menu = new(configManager);
         configManager.List.UpdateRemoteList();
         configManager.List.UpdateLocalList();
-        ScreenTools.GetSharedUIComponent().CreateScreen<PluginsScreen>(menu);
+        ScreenTools.GetSharedUIComponent().CreateScreen<PluginsScreen>(menu, true);
     }
 
     public void OnConsentBoxChanged(object sender, RoutedEventArgs e)

@@ -29,9 +29,9 @@
 								<DockPanel LastChildFill="True" Background="rgba(41,54,62,96)">
 									<Grid DockPanel.Dock="Top" Height="30" Background="rgba(60,76,82,96)">
 										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="250"/>
-											<ColumnDefinition Width="70"/>
-											<ColumnDefinition Width="70"/>
+											<ColumnDefinition Width="385"/>
+											<ColumnDefinition Width="80"/>
+											<ColumnDefinition Width="80"/>
 											<ColumnDefinition Width="70"/>
 										</Grid.ColumnDefinitions>
 										<Label Grid.Column="0">Name</Label>
@@ -49,12 +49,16 @@
 							<DataTemplate>
 								<Grid Margin="0,2">
 									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="250"/>
-										<ColumnDefinition Width="70"/>
-										<ColumnDefinition Width="70"/>
+										<ColumnDefinition Width="375"/>
+										<ColumnDefinition Width="80"/>
+										<ColumnDefinition Width="100"/>
 										<ColumnDefinition Width="70"/>
 									</Grid.ColumnDefinitions>
-									<TextBlock Text="{Binding FriendlyName}" Grid.Column="0"/>
+									<TextBlock Grid.Column="0">
+										<Run Text="{Binding FriendlyName}"/>
+										<LineBreak/>
+										<Run Text="{Binding Author}"/>
+									</TextBlock>
 									<TextBlock Text="{Binding StatusString}" Grid.Column="1"/>
 									<TextBlock Text="{Binding Version}" Grid.Column="2"/>
 									<CheckBox IsChecked="{Binding Enabled}" Grid.Column="3"/>
