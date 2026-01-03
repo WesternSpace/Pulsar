@@ -9,6 +9,8 @@ public class Profile
     public string Key => Tools.CleanFileName(Name);
     public string Name { get; set; }
 
+    public string Description => GetDescription();
+
     public HashSet<GitHubPluginConfig> GitHub { get; set; }
     public HashSet<LocalFolderConfig> DevFolder { get; set; }
     public HashSet<string> Local { get; set; }

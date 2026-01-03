@@ -10,12 +10,26 @@
 			Width="1224" 
 			Height="561">
         <StackPanel Background="rgba(37,47,53,96)">
-            <TextBlock HorizontalAlignment="Center"
+			<Grid>
+				<TextBlock HorizontalAlignment="Center"
 					   Margin="0,40,0,0"
 					   FontSize="25"
 					   FontWeight="Normal">Profiles</TextBlock>
+			<Button Name="CancelButton" Width="40" Height="40" Margin="0,16,26,0" 
+		   HorizontalAlignment="Right" 
+		   HorizontalContentAlignment="Center" 
+		   VerticalContentAlignment="Center"
+		   FontSize="40"
+		   Click="CancelButton_Click">X</Button>
+			</Grid>
             <Separator Background="rgb(77,99,96)" Margin="100,16,100,16"/>
-            <ListBox HorizontalAlignment="Center" Width="1150" Height="345" >
+            <ListBox Name="ProfilesList" 
+					 HorizontalAlignment="Center" 
+					 Width="1150" 
+					 Height="345" 
+					 SelectionChanged="ProfilesList_SelectionChanged" 
+					 DoubleTapped="ProfilesList_DoubleTapped"
+					 Tapped="ProfilesList_Tapped">
 				<ListBox.Template>
 					<ControlTemplate>
 						<DockPanel LastChildFill="True" Background="rgba(41,54,62,96)">
@@ -27,7 +41,9 @@
 								<Label Grid.Column="0">Name</Label>
 								<Label Grid.Column="1">Enabled Count</Label>
 							</Grid>
-							<ItemsPresenter></ItemsPresenter>
+							<ScrollViewer>
+								<ItemsPresenter></ItemsPresenter>
+							</ScrollViewer>
 						</DockPanel>
 					</ControlTemplate>
 				</ListBox.Template>
@@ -39,17 +55,17 @@
 								<ColumnDefinition Width="600"/>
 							</Grid.ColumnDefinitions>
 							<TextBlock Text="{Binding Name}" Grid.Column="0"/>
-							<TextBlock Text="{Binding Count}" Grid.Column="1"/>
+							<TextBlock Text="{Binding Description}" Grid.Column="1"/>
 						</Grid>
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
 			<Separator Background="rgb(77,99,96)" Margin="100,16,100,0"/>
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
-				<Button Name="NewButton" Width="264" Height="55">New</Button>
-				<Button Name="LoadButton" Width="264" Height="55" Margin="26,0,0,0">Load</Button>
-				<Button Name="RenameButton" Width="264" Height="55" Margin="26,0,0,0">Rename</Button>
-				<Button Name="CancelButton" Width="264" Height="55" Margin="26,0,0,0">Cancel</Button>
+				<Button Name="NewButton" Width="264" Height="55" Click="NewButton_Click">New</Button>
+				<Button Name="LoadButton" Width="264" Height="55" Margin="26,0,0,0" Click="LoadButton_Click">Load</Button>
+				<Button Name="RenameButton" Width="264" Height="55" Margin="26,0,0,0" Click="RenameButton_Click">Rename</Button>
+				<Button Name="DeleteButton" Width="264" Height="55" Margin="26,0,0,0" Click="DeleteButton_Click">Delete</Button>
 			</StackPanel>
 		</StackPanel>
     </Border>

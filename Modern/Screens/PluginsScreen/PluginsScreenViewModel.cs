@@ -4,7 +4,9 @@ using Keen.VRage.UI.Screens;
 using Pulsar.Shared;
 using Pulsar.Shared.Config;
 using Pulsar.Shared.Data;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Pulsar.Modern.Screens.PluginsScreen;
 
@@ -18,6 +20,8 @@ internal class PluginsScreenViewModel : ScreenViewModel
     private readonly SourcesConfig sources;
 
     public bool ConsentGiven = PlayerConsent.ConsentGiven;
+
+    public event Action OnListRefreshed;
 
     public PluginsScreenViewModel(ConfigManager configManager)
     {
@@ -55,6 +59,37 @@ internal class PluginsScreenViewModel : ScreenViewModel
             checkbox.IsCheckedChanged -= OnConsentBoxChanged;
             checkbox.IsChecked = PlayerConsent.ConsentGiven;
             checkbox.IsCheckedChanged += OnConsentBoxChanged;
+        }
+    }
+
+    public void RefreshPluginLists()
+    {
+        OnListRefreshed?.Invoke();
+    }
+
+    public void ReplaceDraft(Profile profile)
+    {
+        SyncDevFolders(profile, Draft);
+        profile.Name = Draft.Name;
+        Draft = profile;
+    }
+
+    private void SyncDevFolders(Profile target, Profile previous)
+    {
+        IEnumerable<string> folderIDs = target
+            .DevFolder.Concat(previous.DevFolder)
+            .Select(c => c.Id);
+
+        foreach (string configID in folderIDs)
+        {
+            var tFolder = (LocalFolderConfig)target.GetData(configID);
+            var pFolder = (LocalFolderConfig)previous.GetData(configID);
+
+            if (
+                tFolder?.DataFile != pFolder?.DataFile
+                && PluginList.TryGetPlugin(configID, out PluginData plugin)
+            )
+                plugin.LoadData(tFolder);
         }
     }
 

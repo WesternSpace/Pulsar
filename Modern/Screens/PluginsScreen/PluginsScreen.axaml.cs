@@ -19,10 +19,16 @@ public partial class PluginsScreen : PluginScreenBase
 
         if (!Design.IsDesignMode)
         {
-            PluginsList.DataContext = (DataContext as PluginsScreenViewModel).PluginList
+            (DataContext as PluginsScreenViewModel).OnListRefreshed += delegate
+            {
+                PluginsList.DataContext = (DataContext as PluginsScreenViewModel).PluginList
                 .OrderBy(x => x.FriendlyName)
                 .Where(x => x.GetType() != typeof(ModPlugin))
                 .ToList();
+            };
+
+            (DataContext as PluginsScreenViewModel).RefreshPluginLists();
+
             ConsentBox.IsChecked = (DataContext as PluginsScreenViewModel).ConsentGiven;
             ConsentBox.IsCheckedChanged += (DataContext as PluginsScreenViewModel).OnConsentBoxChanged;
             PlayerConsent.OnConsentChanged += OnConsentChanged;
@@ -93,6 +99,10 @@ public partial class PluginsScreen : PluginScreenBase
 
     private void ProfilesButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        ScreenTools.GetSharedUIComponent().CreateScreen<ProfilesScreen.ProfilesScreen>(new ProfilesScreenViewModel((DataContext as PluginsScreenViewModel).Draft));
+        var viewModel = new ProfilesScreenViewModel((DataContext as PluginsScreenViewModel).Draft);
+        viewModel.OnDraftChange += (DataContext as PluginsScreenViewModel).ReplaceDraft;
+        viewModel.OnScreenClose += () => (DataContext as PluginsScreenViewModel).RefreshPluginLists();
+
+        ScreenTools.GetSharedUIComponent().CreateScreen<ProfilesScreen.ProfilesScreen>(viewModel);
     }
 }

@@ -116,4 +116,9 @@
 		<Publicize Include="SpaceEngineers2" />
 		<Publicize Include="0Harmony" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Compile Update="Screens\TextInputDialog\TextInputDialog.axaml.cs">
+	    <DependentUpon>TextInputDialog.axaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 </Project>
