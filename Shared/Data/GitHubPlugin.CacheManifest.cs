@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 using Pulsar.Shared.Config;
 
@@ -29,6 +30,8 @@ public partial class GitHubPlugin
         public string LibDir => libDir;
 
         public string Commit { get; set; }
+
+        public string Runtime { get; set; }
 
         [XmlIgnore]
         public Version GameVersion { get; set; }
@@ -121,7 +124,11 @@ public partial class GitHubPlugin
             bool requiresPackages
         )
         {
-            if (!File.Exists(DllFile) || Commit != currentCommit)
+            if (
+                !File.Exists(DllFile)
+                || Commit != currentCommit
+                || Runtime != RuntimeInformation.FrameworkDescription
+            )
                 return false;
 
             if (currentGameVersion is not null)

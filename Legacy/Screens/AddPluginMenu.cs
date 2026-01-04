@@ -45,7 +45,10 @@ public class AddPluginMenu : PluginScreen
     public AddPluginMenu(IEnumerable<PluginData> plugins, bool mods, Profile draft)
         : base(size: new Vector2(0.8f, 0.9f))
     {
-        this.plugins = [.. plugins.Where(x => (x is ModPlugin) == mods)];
+        this.plugins = plugins
+            .Where(x => (x is ModPlugin) == mods && x.IsSupportedRuntime())
+            .ToList();
+
         stats = ConfigManager.Instance.Stats ?? new PluginStats();
         this.mods = mods;
         this.draft = draft;

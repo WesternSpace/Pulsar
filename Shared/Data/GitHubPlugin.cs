@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Serialization;
 using ProtoBuf;
@@ -168,6 +169,7 @@ public partial class GitHubPlugin : PluginData
 
             manifest.GameVersion = gameVersion;
             manifest.Commit = selectedCommit;
+            manifest.Runtime = RuntimeInformation.FrameworkDescription;
             manifest.ClearAssets();
             string name = assemblyName + '_' + Path.GetRandomFileName();
             Action<float> setBarValue = lbl is not null ? lbl.SetBarValue : null;

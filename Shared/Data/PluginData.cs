@@ -36,6 +36,7 @@ public abstract class PluginData : IEquatable<PluginData>
             return Status switch
             {
                 PluginStatus.Network => "Network!",
+                PluginStatus.Runtime => "Runtime!",
                 PluginStatus.Updated => "Updated",
                 PluginStatus.Error => "Error!",
                 PluginStatus.Blocked => "Blocked!",
@@ -65,6 +66,9 @@ public abstract class PluginData : IEquatable<PluginData>
     [ProtoMember(7)]
     public string Description { get; set; }
 
+    [ProtoMember(8)]
+    public string Runtimes { get; set; }
+
     [XmlIgnore]
     public List<PluginData> Group { get; } = [];
 
@@ -82,6 +86,13 @@ public abstract class PluginData : IEquatable<PluginData>
 
     public virtual bool TryLoadAssembly(out Assembly a)
     {
+        if (!IsSupportedRuntime())
+        {
+            Status = PluginStatus.Runtime;
+            a = null;
+            return false;
+        }
+
         if (Status == PluginStatus.Error)
         {
             a = null;
@@ -144,6 +155,16 @@ public abstract class PluginData : IEquatable<PluginData>
             a = null;
             return false;
         }
+    }
+
+    public bool IsSupportedRuntime()
+    {
+        return Runtimes is null
+#if NETFRAMEWORK
+            || Runtimes.Contains("NETFramework");
+#else
+            || Runtimes.Contains("NETCoreApp");
+#endif
     }
 
     public override bool Equals(object obj)
