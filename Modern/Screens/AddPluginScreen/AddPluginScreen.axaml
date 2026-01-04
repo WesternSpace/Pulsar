@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:Class="Pulsar.Modern.Screens.AddPluginScreen.AddPluginScreen">
+  <Border Background="Transparent"
+			BorderBrush="rgba(66,77,99,96)"
+			BorderThickness="1.5" 
+			Width="1152" 
+			Height="972">
+        <StackPanel Background="rgba(37,47,53,96)">
+            <TextBlock Name="TitleText" 
+                       Text="Plugin List" 
+                       Margin="0,30,0,0"
+                       TextAlignment="Center"
+                       FontSize="25"
+					   FontWeight="Normal"/>
+            <Separator Background="rgb(77,99,96)" Margin="100,16,100,0"/>
+            <Grid Margin="30,10,30,10">
+                <Grid.ColumnDefinitions>
+					<ColumnDefinition Width="875"/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<TextBox Name="SearchBox" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,10,0" Watermark="Search" TextChanged="SearchBox_TextChanged">
+                    <TextBox.InnerRightContent>
+						<Button Name="SearchClearButton" MaxHeight="15" MaxWidth="15" Content="X" IsVisible="False" Click="SearchClearButton_Click"/>
+                    </TextBox.InnerRightContent>
+                </TextBox>
+                <DropDownButton Name="SortDropdown" Grid.Column="1" HorizontalAlignment="Stretch"/>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

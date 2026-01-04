@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Keen.Game2.Client.UI.Library.Dialogs.ThreeOptionsDialog;
 using Keen.VRage.UI.AvaloniaInterface.Services;
+using Pulsar.Modern.Screens.AddPluginScreen;
 using Pulsar.Modern.Screens.ProfilesScreen;
 using Pulsar.Shared;
 using Pulsar.Shared.Data;
@@ -115,5 +116,21 @@ public partial class PluginsScreen : PluginScreenBase
         (DataContext as PluginsScreenViewModel).Sources.Save();
 
         RefreshButton.IsEnabled = false;
+    }
+
+    private void PluginAddButton_Click(object? sender, RoutedEventArgs e)
+    {
+        var viewModel = new AddPluginScreenViewModel(false);
+        viewModel.OnScreenClose += () => (DataContext as PluginsScreenViewModel).RefreshPluginLists();
+
+        ScreenTools.GetSharedUIComponent().CreateScreen<AddPluginScreen.AddPluginScreen>(viewModel);
+    }
+
+    private void ModAddButton_Click(object? sender, RoutedEventArgs e)
+    {
+        var viewModel = new AddPluginScreenViewModel(true);
+        viewModel.OnScreenClose += () => (DataContext as PluginsScreenViewModel).RefreshPluginLists();
+
+        ScreenTools.GetSharedUIComponent().CreateScreen<AddPluginScreen.AddPluginScreen>(viewModel);
     }
 }

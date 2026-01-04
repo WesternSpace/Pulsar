@@ -69,7 +69,7 @@
 					<StackPanel Orientation="Horizontal" Grid.Column="3" Margin="0,12,0,0" HorizontalAlignment="Right">
 						<Button Name="PluginSettingsButton" Width="30" Height="30" Margin="0,0,6,0" IsEnabled="False" ToolTip.Tip="Open plugin settings, in-game hotkey: Ctrl+Alt+/"></Button>
 						<Button Name="PluginDetailsButton" Width="30" Height="30" Margin="0,0,6,0" IsEnabled="False" ToolTip.Tip="Show details"></Button>
-						<Button Name="PluginAddButton" Width="30" Height="30" ToolTip.Tip="Add plugin">
+						<Button Name="PluginAddButton" Width="30" Height="30" ToolTip.Tip="Add plugin" Click="PluginAddButton_Click">
 							<TextBlock HorizontalAlignment="Center"
 									   VerticalAlignment="Center"
 									   FontSize="70"
@@ -116,7 +116,7 @@
 					</ListBox>
 					<StackPanel Orientation="Horizontal" Grid.Column="3" Margin="0,12,0,0" HorizontalAlignment="Right">
 						<Button Name="ModDetailsButton" Width="30" Height="30" Margin="0,0,6,0" IsEnabled="False" ToolTip.Tip="Show details"></Button>
-						<Button Name="ModAddButton" Width="30" Height="30" ToolTip.Tip="Add mod">
+						<Button Name="ModAddButton" Width="30" Height="30" ToolTip.Tip="Add mod" Click="ModAddButton_Click">
 							<TextBlock HorizontalAlignment="Center"
 									   VerticalAlignment="Center"
 									   FontSize="70"
