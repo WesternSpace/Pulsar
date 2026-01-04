@@ -32,6 +32,8 @@ public partial class PluginsScreen : PluginScreenBase
             ConsentBox.IsChecked = (DataContext as PluginsScreenViewModel).ConsentGiven;
             ConsentBox.IsCheckedChanged += (DataContext as PluginsScreenViewModel).OnConsentBoxChanged;
             PlayerConsent.OnConsentChanged += OnConsentChanged;
+
+            SourcesButton.IsVisible = Flags.CustomSources;
         }
         else
         {
@@ -104,5 +106,14 @@ public partial class PluginsScreen : PluginScreenBase
         viewModel.OnScreenClose += () => (DataContext as PluginsScreenViewModel).RefreshPluginLists();
 
         ScreenTools.GetSharedUIComponent().CreateScreen<ProfilesScreen.ProfilesScreen>(viewModel);
+    }
+
+    private void RefreshButton_Click(object? sender, RoutedEventArgs e)
+    {
+        (DataContext as PluginsScreenViewModel).PluginList.UpdateRemoteList();
+        (DataContext as PluginsScreenViewModel).PluginList.UpdateLocalList();
+        (DataContext as PluginsScreenViewModel).Sources.Save();
+
+        RefreshButton.IsEnabled = false;
     }
 }

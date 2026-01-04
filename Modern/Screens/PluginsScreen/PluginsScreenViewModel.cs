@@ -17,7 +17,7 @@ internal class PluginsScreenViewModel : ScreenViewModel
     public readonly PluginList PluginList;
     public readonly List<PluginData> EnabledPluginList;
     private readonly ProfilesConfig profiles;
-    private readonly SourcesConfig sources;
+    public readonly SourcesConfig Sources;
 
     public bool ConsentGiven = PlayerConsent.ConsentGiven;
 
@@ -32,7 +32,7 @@ internal class PluginsScreenViewModel : ScreenViewModel
         Draft = Tools.DeepCopy(configManager.Profiles.Current);
         PluginList = configManager.List;
         profiles = configManager.Profiles;
-        sources = configManager.Sources;
+        Sources = configManager.Sources;
 
         InitializeInputContext();
     }
