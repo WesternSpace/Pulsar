@@ -36,7 +36,7 @@ internal static class ScreenTools
         {
             SelectedOption = TwoOptionsDialogSelectedOption.Confirm,
             ConfirmOption = GetKeyFromString("Yes"),
-            CancelOption = GetKeyFromString("Cancel")
+            CancelOption = GetKeyFromString("No")
         };
     }
 

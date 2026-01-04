@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Keen.Game2.Client.UI.Library.Dialogs.OneOptionDialog;
+using Keen.Game2.Client.UI.Library.Dialogs.TwoOptionsDialog;
 using Keen.VRage.UI.AvaloniaInterface.Services;
 using Pulsar.Modern.Screens.TextInputDialog;
 using Pulsar.Shared;
@@ -96,7 +96,7 @@ public partial class ProfilesScreen : PluginScreenBase
         definition.Title = ScreenTools.GetKeyFromString("Delete Profile");
         definition.Content = ScreenTools.GetKeyFromString($"Are you sure you want to delete \"{profile.Name}\"?");
 
-        ScreenTools.GetSharedUIComponent().ShowDialog(new OneOptionDialogViewModel(definition) 
+        ScreenTools.GetSharedUIComponent().ShowDialog(new TwoOptionsDialogViewModel(definition) 
         {
             ConfirmAction = () =>
             {
